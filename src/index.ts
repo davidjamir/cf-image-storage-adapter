@@ -22,7 +22,8 @@ export default {
 			});
 		}
 
-		const host = new URL(request.url).hostname;
+		const body = (await request.clone().json()) as { host: string };
+		const { host } = body;
 		const domain = host === 'localhost' ? DOMAIN_DEFAULT : host.split('.').slice(-2).join('.');
 		const cdn = domains[domain][Math.floor(Math.random() * domains[domain].length)];
 		const target = routes[cdn];
