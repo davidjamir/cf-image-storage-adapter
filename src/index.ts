@@ -1,4 +1,4 @@
-import { domains, routes, DOMAIN_DEFAULT } from './data';
+import { domains, routes } from './data';
 const allowedMethods = ['POST'];
 
 export default {
@@ -22,9 +22,9 @@ export default {
 			});
 		}
 
-		const body = (await request.clone().json()) as { host: string };
-		const { host } = body;
-		const domain = host === 'localhost' ? DOMAIN_DEFAULT : host.split('.').slice(-2).join('.');
+		const body = (await request.clone().json()) as { origin: string };
+
+		const domain = body.origin;
 		const cdn = domains[domain][Math.floor(Math.random() * domains[domain].length)];
 		const target = routes[cdn];
 
@@ -32,6 +32,10 @@ export default {
 			return new Response('Unknown host', { status: 404 });
 		}
 
+		const newBody = {
+			...body,
+			cdnHost: target,
+		};
 		const url = new URL(request.url);
 		const targetUrl = new URL(target);
 
@@ -39,7 +43,11 @@ export default {
 		url.hostname = targetUrl.hostname;
 		url.port = targetUrl.port;
 
-		const newRequest = new Request(url, request);
+		const newRequest = new Request(url, {
+			method: request.method,
+			headers: request.headers,
+			body: JSON.stringify(newBody),
+		});
 
 		return fetch(newRequest);
 	},
