@@ -34,7 +34,7 @@ export default {
 
 		const newBody = {
 			...body,
-			cdnHost: target,
+			cdnHost: cdn,
 		};
 		const url = new URL(request.url);
 		const targetUrl = new URL(target);
